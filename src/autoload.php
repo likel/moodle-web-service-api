@@ -5,7 +5,7 @@
  * After registering this autoload function with require_once()
  * Likel/Moodle/API can be called like this:
  *
- *      $MDL = new Likel/Moodle/API();
+ *      $mdl = new Likel/Moodle/API();
  *
  * @package     moodle-web-service-wrapper
  * @author      Liam Kelly <https://github.com/likel>

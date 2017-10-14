@@ -24,7 +24,7 @@ class Engine
      * @param string $credentials_location The credentials.ini file location
      * @return void
      */
-    function __construct($credentials_location  = __DIR__ . '/../../ini/credentials.ini')
+    function __construct($credentials_location = __DIR__ . '/../../ini/credentials.ini')
     {
         // Attempt to get the engine parameters from the credentials.ini file
         try {
@@ -35,17 +35,17 @@ class Engine
     }
 
     /**
-	 * Handle curl calls made to the moodle API
-	 *
-	 * @param string $function_name The function name from the webservice API
-	 * @param array $payload The array of parameters to pass to the webservice
-	 * @return array
-	 */
-	public function call($function_name, $payload)
+     * Handle curl calls made to the moodle API
+     *
+     * @param string $function_name The function name from the webservice API
+     * @param array $payload The array of parameters to pass to the webservice
+     * @return array
+     */
+    public function call($function_name, $payload)
     {
         // Generate the URL
         $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token . '&wsfunction=' . $function_name;
-		$rest_format = ($this->rest_format == 'json') ? '&moodlewsrestformat=' . $this->rest_format : '';
+        $rest_format = ($this->rest_format == 'json') ? '&moodlewsrestformat=' . $this->rest_format : '';
 
         // Create the curl request
         $curl_request = curl_init();
@@ -61,7 +61,7 @@ class Engine
         $response = curl_exec($curl_request);
         curl_close($curl_request);
         return $this->parseResponse(json_decode($response, true));
-	}
+    }
 
     /**
      * Supply us with a friendly success message
@@ -75,15 +75,20 @@ class Engine
             if(!empty($response['exception'])) {
                 return array(
                     "success" => false,
-                    "message" => $response['message']
+                    "message" => $response['message'],
+                    "short" => "generic_error"
                 );
             } else {
-                return $response;
+                return array(
+                    "success" => true,
+                    "response" => $response
+                );
             }
         } else {
             return array(
                 "success" => false,
-                "message" => "Response was not an array"
+                "message" => "Response was not an array",
+                "short" => "not_array"
             );
         }
     }
