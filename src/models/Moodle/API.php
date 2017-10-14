@@ -202,7 +202,8 @@ class API extends Engine
      * @param string $email The email to search for
      * @return mixed
      */
-    private function checkUsernameAndEmail($username, $email) {
+    private function checkUsernameAndEmail($username, $email)
+    {
         // Check if the username exists
         $username_exists = $this->userExists(array('username' => $username));
 
