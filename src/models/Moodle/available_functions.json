@@ -1,0 +1,22 @@
+{
+   "all":[
+      "any()"
+   ],
+   "core_user_create_users":[
+      "createUsers()",
+      "createUser()"
+   ],
+   "core_user_update_users":[
+      "updateUsers()",
+      "updateUser()"
+   ],
+   "core_user_get_users":[
+      "getUsers()",
+      "getUser()",
+      "userExists()"
+   ],
+   "core_user_delete_users":[
+      "deleteUsers()",
+      "deleteUser()"
+   ]
+}

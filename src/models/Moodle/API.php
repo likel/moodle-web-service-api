@@ -536,37 +536,14 @@ class API
      */
     public function available($echo = false)
     {
-        $available = array();
-
-        $available["all"][] = "any()";
-
-        // core_user_create_users
-        $available["core_user_create_users"][] = "createUsers()";
-        $available["core_user_create_users"][] = "createUser()";
-
-        // core_user_update_users
-        $available["core_user_update_users"][] = "updateUsers()";
-        $available["core_user_update_users"][] = "updateUser()";
-
-        // core_user_get_users
-        $available["core_user_get_users"][] = "getUsers()";
-        $available["core_user_get_users"][] = "getUser()";
-        $available["core_user_get_users"][] = "userExists()";
-
-        // core_user_delete_users
-        $available["core_user_delete_users"][] = "deleteUsers()";
-        $available["core_user_delete_users"][] = "deleteUser()";
-
-        if($echo) {
-            foreach($available as $key => $function_list) {
-                echo $key . "::" . PHP_EOL;
-                foreach($function_list as $function) {
-                    echo $function . PHP_EOL;
-                }
-                echo PHP_EOL;
+        if(file_exists(__DIR__ . "/available_functions.json")) {
+            if($echo) {
+                echo file_get_contents(__DIR__ . "/available_functions.json");
+            } else {
+                return json_decode(file_get_contents(__DIR__ . "/available_functions.json"), true);
             }
         } else {
-            return $available;
+            return false;
         }
     }
 }
