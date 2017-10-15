@@ -22,11 +22,11 @@
  */
 namespace Likel\Moodle;
 
-class API extends Engine
+class API
 {
-    private $db; // Store the database connection
-    private $secret_hash; // Hold the secret hash for encryption
-    private $session_hash_algorithm = "sha512"; // Algorithm to hash the session variables
+    private $url; // Your moodle site URL
+    private $webservice_token; // The webservice token generated in Moodle
+    private $rest_format = "json"; // Default to json, otherwise leave blank for XML
 
     /**
      * Construct the Moodle API object
@@ -43,7 +43,12 @@ class API extends Engine
 
         $parameters["credentials_location"] = empty($parameters["credentials_location"]) ? __DIR__ . '/../../ini/credentials.ini' : $parameters["credentials_location"];
 
-        parent::__construct($parameters["credentials_location"]);
+        // Attempt to get the engine parameters from the credentials.ini file
+        try {
+            $this->loadCredentials($parameters["credentials_location"]);
+        } catch (\Exception $ex) {
+            echo $ex->getMessage();
+        }
     }
 
     /**
@@ -239,6 +244,90 @@ class API extends Engine
      */
     public function call($function_name, $payload)
     {
-        return parent::call($function_name, $payload);
+        // Generate the URL
+        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token . '&wsfunction=' . $function_name;
+        $rest_format = ($this->rest_format == 'json') ? '&moodlewsrestformat=' . $this->rest_format : '';
+
+        // Create the curl request
+        $curl_request = curl_init();
+        curl_setopt($curl_request, CURLOPT_URL, $server_url . $rest_format);
+        curl_setopt($curl_request, CURLOPT_POST, 1);
+        curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl_request, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_request, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($curl_request, CURLOPT_POSTFIELDS, http_build_query($payload));
+
+        // Return the result
+        $response = curl_exec($curl_request);
+        curl_close($curl_request);
+        return $this->parseResponse(json_decode($response, true));
+    }
+
+    /**
+     * Supply us with a friendly success message
+     *
+     * @param array $response The response from the call
+     * @return array
+     */
+    private function parseResponse($response)
+    {
+        if(is_array($response)) {
+            if(!empty($response['exception'])) {
+                return array(
+                    "success" => false,
+                    "message" => $response['message'],
+                    "short" => "generic_error"
+                );
+            } else {
+                return array(
+                    "success" => true,
+                    "response" => $response
+                );
+            }
+        } else {
+            return array(
+                "success" => false,
+                "message" => "Response was not an array",
+                "short" => "not_array"
+            );
+        }
+    }
+
+    /**
+     * Attempt to retrieve the credentials from the credentials file
+     *
+     * @param array $credentials_location The credentials.ini file location
+     * @return void
+     * @throws \Exception If credentials are empty or not found
+     */
+    private function loadCredentials($credentials_location)
+    {
+        if(file_exists($credentials_location)) {
+            $moodle_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $moodle_credentials["moodle_api"];
+
+            if(!empty($credentials)){
+                if(!empty($credentials["url"])) {
+                    $this->url = $credentials["url"];
+                } else {
+                    throw new \Exception('The \'url\' variable is empty');
+                }
+
+                if(!empty($credentials["token"])) {
+                    $this->webservice_token = $credentials["token"];
+                } else {
+                    throw new \Exception('The \'token\' variable is empty');
+                }
+
+                if(!empty($credentials["rest_format"])) {
+                    $this->rest_format = ($credentials["rest_format"] == "xml") ? "xml" : "json";
+                }
+            } else {
+                throw new \Exception('The \'moodle_api\' parameter in the credentials file is empty');
+            }
+        } else {
+            throw new \Exception('The credentials file could not be located at ' . $credentials_location);
+        }
     }
 }
