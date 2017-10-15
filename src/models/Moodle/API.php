@@ -195,7 +195,7 @@ class API
         } else {
             return $response;
         }
-	}
+    }
 
     /**
      * core_user_update_users
@@ -217,7 +217,7 @@ class API
         } else {
             return $update_user;
         }
-	}
+    }
 
     /**
      * core_user_get_users
