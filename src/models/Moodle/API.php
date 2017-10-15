@@ -26,7 +26,6 @@ class API
 {
     private $url; // Your moodle site URL
     private $webservice_token; // The webservice token generated in Moodle
-    private $rest_format = "json"; // Default to json, otherwise leave blank for XML
 
     /**
      * Construct the Moodle API object
@@ -399,8 +398,8 @@ class API
     private function call($function_name, $payload)
     {
         // Generate the URL
-        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token . '&wsfunction=' . $function_name;
-        $rest_format = ($this->rest_format == 'json') ? '&moodlewsrestformat=' . $this->rest_format : '';
+        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token .
+        '&wsfunction=' . $function_name . '&moodlewsrestformat=json';
 
         // Create the curl request
         $curl_request = curl_init();
@@ -515,10 +514,6 @@ class API
                     $this->webservice_token = $credentials["token"];
                 } else {
                     throw new \Exception('The \'token\' variable is empty');
-                }
-
-                if(!empty($credentials["rest_format"])) {
-                    $this->rest_format = ($credentials["rest_format"] == "xml") ? "xml" : "json";
                 }
             } else {
                 throw new \Exception('The \'moodle_api\' parameter in the credentials file is empty');
