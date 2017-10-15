@@ -403,7 +403,7 @@ class API
 
         // Create the curl request
         $curl_request = curl_init();
-        curl_setopt($curl_request, CURLOPT_URL, $server_url . $rest_format);
+        curl_setopt($curl_request, CURLOPT_URL, $server_url);
         curl_setopt($curl_request, CURLOPT_POST, 1);
         curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
         curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
