@@ -31,7 +31,7 @@ class API
      * Construct the Moodle API object
      * Setup the parent Engine class
      *
-     * @param array $parameters An assoc. array that holds the session parameters
+     * @param array $parameters An assoc. array that holds the Moodle parameters
      * @return void
      */
     function __construct($parameters = array())
