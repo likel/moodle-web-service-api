@@ -389,35 +389,6 @@ class API
     }
 
     /**
-     * Handle curl calls made to the moodle API
-     *
-     * @param string $function_name The function name from the webservice API
-     * @param array $payload The array of parameters to pass to the webservice
-     * @return array
-     */
-    private function call($function_name, $payload)
-    {
-        // Generate the URL
-        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token .
-        '&wsfunction=' . $function_name . '&moodlewsrestformat=json';
-
-        // Create the curl request
-        $curl_request = curl_init();
-        curl_setopt($curl_request, CURLOPT_URL, $server_url);
-        curl_setopt($curl_request, CURLOPT_POST, 1);
-        curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-        curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl_request, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl_request, CURLOPT_FOLLOWLOCATION, 0);
-        curl_setopt($curl_request, CURLOPT_POSTFIELDS, http_build_query($payload));
-
-        // Return the result
-        $response = curl_exec($curl_request);
-        curl_close($curl_request);
-        return $this->parseResponse(json_decode($response, true));
-    }
-
-    /**
      * Extend the userExists function to search for username or email
      * Will return false if neither are found
      *
@@ -523,6 +494,35 @@ class API
         }
     }
 
+    /**
+     * Handle curl calls made to the moodle API
+     *
+     * @param string $function_name The function name from the webservice API
+     * @param array $payload The array of parameters to pass to the webservice
+     * @return array
+     */
+    private function call($function_name, $payload)
+    {
+        // Generate the URL
+        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token;
+        $server_url .= '&wsfunction=' . $function_name . '&moodlewsrestformat=json';
+
+        // Create the curl request
+        $curl_request = curl_init();
+        curl_setopt($curl_request, CURLOPT_URL, $server_url);
+        curl_setopt($curl_request, CURLOPT_POST, 1);
+        curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl_request, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_request, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($curl_request, CURLOPT_POSTFIELDS, http_build_query($payload));
+
+        // Return the result
+        $response = curl_exec($curl_request);
+        curl_close($curl_request);
+        return $this->parseResponse(json_decode($response, true));
+    }
+    
     /**
      * Return or echo our supported webservice functions
      *
