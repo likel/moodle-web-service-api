@@ -249,8 +249,7 @@ class API
             $search_list[] = array("key" => $key, "value" => $value);
         }
 
-        $response = $this->call('core_user_get_users', array('criteria' => $search_list));
-        return $response;
+        return $this->call('core_user_get_users', array('criteria' => $search_list));
     }
 
     /**
@@ -376,6 +375,54 @@ class API
     }
 
     /**
+     * core_course_create_courses
+     *
+     * Create courses from a supplied array of course parameters
+     *
+     * Expects the following format as a minimum:
+     *
+     *     array(
+     *         array(
+     *             "fullname" => "Introduction to Game Programming",
+     *             "shortname" => "GP001",
+     *             "categoryid" => "1"
+     *         ),
+     *         array(
+     *             "fullname" => "Advanced Game Programming",
+     *             "shortname" => "GP002",
+     *             "categoryid" => "1"
+     *         )
+     *     )
+     *
+     * @param array $courses The array of course parameters
+     * @return array
+     */
+    public function createCourses($courses = null)
+    {
+        if(!is_array($courses)) {
+            return false;
+        }
+
+        $final_course_list = array();
+
+        foreach($courses as $course) {
+            if(empty($course["fullname"]) || empty($course["shortname"]) || empty($course["categoryid"])) {
+                continue;
+            } else {
+                $temp_course_array = array();
+
+                foreach($course as $key => $value) {
+                    $temp_course_array[$key] = $value;
+                }
+
+                $final_course_list[] = $temp_course_array;
+            }
+        }
+
+        return $this->call('core_course_create_courses', array('courses' => $final_course_list));
+    }
+
+    /**
      * Allow the user to call any method that isn't supported in this wrapper
      * https://docs.moodle.org/dev/Web_service_API_functions
      *
@@ -386,35 +433,6 @@ class API
     public function any($function_name, $payload)
     {
         return $this->call($function_name, $payload);
-    }
-
-    /**
-     * Handle curl calls made to the moodle API
-     *
-     * @param string $function_name The function name from the webservice API
-     * @param array $payload The array of parameters to pass to the webservice
-     * @return array
-     */
-    private function call($function_name, $payload)
-    {
-        // Generate the URL
-        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token .
-        '&wsfunction=' . $function_name . '&moodlewsrestformat=json';
-
-        // Create the curl request
-        $curl_request = curl_init();
-        curl_setopt($curl_request, CURLOPT_URL, $server_url);
-        curl_setopt($curl_request, CURLOPT_POST, 1);
-        curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-        curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl_request, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl_request, CURLOPT_FOLLOWLOCATION, 0);
-        curl_setopt($curl_request, CURLOPT_POSTFIELDS, http_build_query($payload));
-
-        // Return the result
-        $response = curl_exec($curl_request);
-        curl_close($curl_request);
-        return $this->parseResponse(json_decode($response, true));
     }
 
     /**
@@ -453,6 +471,68 @@ class API
     }
 
     /**
+     * Attempt to retrieve the credentials from the credentials file
+     *
+     * @param array $credentials_location The credentials.ini file location
+     * @return void
+     * @throws \Exception If credentials are empty or not found
+     */
+    private function loadCredentials($credentials_location)
+    {
+        if(file_exists($credentials_location)) {
+            $moodle_credentials = parse_ini_file($credentials_location, true);
+            $credentials = $moodle_credentials["moodle_api"];
+
+            if(!empty($credentials)){
+                if(!empty($credentials["url"])) {
+                    $this->url = $credentials["url"];
+                } else {
+                    throw new \Exception('The \'url\' variable is empty');
+                }
+
+                if(!empty($credentials["token"])) {
+                    $this->webservice_token = $credentials["token"];
+                } else {
+                    throw new \Exception('The \'token\' variable is empty');
+                }
+            } else {
+                throw new \Exception('The \'moodle_api\' parameter in the credentials file is empty');
+            }
+        } else {
+            throw new \Exception('The credentials file could not be located at ' . $credentials_location);
+        }
+    }
+
+    /**
+     * Handle curl calls made to the moodle API
+     *
+     * @param string $function_name The function name from the webservice API
+     * @param array $payload The array of parameters to pass to the webservice
+     * @return array
+     */
+    private function call($function_name, $payload)
+    {
+        // Generate the URL
+        $server_url = $this->url . '/webservice/rest/server.php?wstoken=' . $this->webservice_token;
+        $server_url .= '&wsfunction=' . $function_name . '&moodlewsrestformat=json';
+
+        // Create the curl request
+        $curl_request = curl_init();
+        curl_setopt($curl_request, CURLOPT_URL, $server_url);
+        curl_setopt($curl_request, CURLOPT_POST, 1);
+        curl_setopt($curl_request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($curl_request, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl_request, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_request, CURLOPT_FOLLOWLOCATION, 0);
+        curl_setopt($curl_request, CURLOPT_POSTFIELDS, http_build_query($payload));
+
+        // Return the result
+        $response = curl_exec($curl_request);
+        curl_close($curl_request);
+        return $this->parseResponse(json_decode($response, true));
+    }
+
+    /**
      * Supply us with a friendly success message
      *
      * @param array $response The response from the call
@@ -487,39 +567,6 @@ class API
                 "message" => "Response was not an array",
                 "short" => "not_array"
             );
-        }
-    }
-
-    /**
-     * Attempt to retrieve the credentials from the credentials file
-     *
-     * @param array $credentials_location The credentials.ini file location
-     * @return void
-     * @throws \Exception If credentials are empty or not found
-     */
-    private function loadCredentials($credentials_location)
-    {
-        if(file_exists($credentials_location)) {
-            $moodle_credentials = parse_ini_file($credentials_location, true);
-            $credentials = $moodle_credentials["moodle_api"];
-
-            if(!empty($credentials)){
-                if(!empty($credentials["url"])) {
-                    $this->url = $credentials["url"];
-                } else {
-                    throw new \Exception('The \'url\' variable is empty');
-                }
-
-                if(!empty($credentials["token"])) {
-                    $this->webservice_token = $credentials["token"];
-                } else {
-                    throw new \Exception('The \'token\' variable is empty');
-                }
-            } else {
-                throw new \Exception('The \'moodle_api\' parameter in the credentials file is empty');
-            }
-        } else {
-            throw new \Exception('The credentials file could not be located at ' . $credentials_location);
         }
     }
 
