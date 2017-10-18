@@ -18,7 +18,7 @@
  * @copyright   2017 Liam Kelly
  * @license     GPL-3.0 License <https://github.com/likel/moodle-web-service-wrapper/blob/master/LICENSE>
  * @link        https://github.com/likel/moodle-web-service-wrapper
- * @version     1.0.0
+ * @version     1.0.1
  */
 namespace Likel\Moodle;
 
