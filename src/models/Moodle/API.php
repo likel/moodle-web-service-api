@@ -115,7 +115,7 @@ class API
     /**
      * core_user_create_users
      *
-     * Get a singular user, extends the createUsers function
+     * Create a singular user, extends the createUsers function
      *
      * @param array $user The singular user as an array
      * @return array
@@ -420,6 +420,19 @@ class API
         }
 
         return $this->call('core_course_create_courses', array('courses' => $final_course_list));
+    }
+
+    /**
+     * core_course_create_courses
+     *
+     * Create a singular course, extends the createCourses function
+     *
+     * @param array $course The singular course as an array
+     * @return array
+     */
+    public function createCourse($course = null)
+    {
+        return $this->createCourses(array($course));
     }
 
     /**
