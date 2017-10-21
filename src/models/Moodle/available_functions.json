@@ -22,5 +22,18 @@
     "core_course_create_courses":[
         "createCourses()",
         "createCourse()"
+    ],
+    "enrol_manual_enrol_users":[
+        "enrolUsers()",
+        "enrolUser()"
+    ],
+    "core_enrol_get_users_courses":[
+        "getUsersCourses()"
+    ],
+    "core_enrol_get_enrolled_users":[
+        "getCourseUsers()"
+    ],
+    "core_enrol_get_course_enrolment_methods":[
+        "getCourseEnrolmentMethods()"
     ]
 }

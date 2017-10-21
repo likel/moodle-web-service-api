@@ -409,13 +409,7 @@ class API
             if(empty($course["fullname"]) || empty($course["shortname"]) || empty($course["categoryid"])) {
                 continue;
             } else {
-                $temp_course_array = array();
-
-                foreach($course as $key => $value) {
-                    $temp_course_array[$key] = $value;
-                }
-
-                $final_course_list[] = $temp_course_array;
+                $final_course_list[] = $course;
             }
         }
 
@@ -433,6 +427,138 @@ class API
     public function createCourse($course = null)
     {
         return $this->createCourses(array($course));
+    }
+
+    /**
+     * enrol_manual_enrol_users
+     *
+     * Enrol a list of users to a list of courses
+     *
+     * Expects the following format:
+     *
+     *     array(
+     *         array(
+     *             "roleid" => "5",
+     *             "userid" => "2",
+     *             "courseid" => "2",
+     *             "timestart" => "1483228800",
+     *             "timeend" => "1514592000",
+     *             "suspend" => "0"
+     *         ),
+     *         array(
+     *             "roleid" => "5",
+     *             "userid" => "3",
+     *             "courseid" => "3",
+     *             "timestart" => "1483228800",
+     *             "timeend" => "1514592000",
+     *             "suspend" => "0"
+     *         )
+     *     )
+     *
+     * @param array $enrolments The list of enrolments
+     * @return array
+     */
+    public function enrolUsers($enrolments = null)
+    {
+        if(!is_array($enrolments)) {
+            return false;
+        }
+
+        $final_enrolment_list = array();
+
+        foreach($enrolments as $enrolment) {
+            if(empty($enrolment["roleid"]) || empty($enrolment["userid"]) || empty($enrolment["courseid"])) {
+                continue;
+            } else {
+                $final_enrolment_list[] = $enrolment;
+            }
+        }
+
+        $response = $this->call('enrol_manual_enrol_users', array('enrolments' => $final_enrolment_list));
+
+        if($response["short"] == "not_array") {
+            return array(
+                "success" => "true",
+                "response" => "enrolled"
+            );
+        } else {
+            return $response;
+        }
+    }
+
+    /**
+     * enrol_manual_enrol_users
+     *
+     * Enrol a user into a course
+     *
+     * Expects the following format as a minimum:
+     *
+     *     array(
+     *         "roleid" => "5",
+     *         "userid" => "2",
+     *         "courseid" => "2",
+     *         "timestart" => "1483228800",
+     *         "timeend" => "1514592000",
+     *         "suspend" => "0"
+     *     )
+     *
+     * @param array $enrolment The singular enrolment
+     * @return array
+     */
+    public function enrolUser($enrolment = null)
+    {
+        return $this->enrolUsers(array($enrolment));
+    }
+
+    /**
+     * core_enrol_get_users_courses
+     *
+     * Return the courses that a user is enrolled in
+     *
+     * @param int $user_id A user id
+     * @return array
+     */
+    public function getUsersCourses($user_id = null)
+    {
+        if(empty($user_id)) {
+            return false;
+        }
+
+        return $this->call('core_enrol_get_users_courses', array('userid' => $user_id));
+    }
+
+    /**
+     * core_enrol_get_enrolled_users
+     *
+     * Return the users that are enrolled in a course
+     *
+     * @param int $course_id A course id
+     * @return array
+     */
+    public function getCourseUsers($course_id = null)
+    {
+        if(empty($course_id)) {
+            return false;
+        }
+
+        return $this->call('core_enrol_get_enrolled_users', array('courseid' => $course_id));
+    }
+
+    /**
+     * core_enrol_get_course_enrolment_methods
+     *
+     * Return enrolment methods for a course
+     *
+     * @param int $course_id A course id
+     * @return array
+     */
+    public function getCourseEnrolmentMethods($course_id = null)
+    {
+        if(empty($course_id)) {
+            return false;
+        }
+
+        return $this->call('core_enrol_get_course_enrolment_methods', array('courseid' => $course_id));
     }
 
     /**
